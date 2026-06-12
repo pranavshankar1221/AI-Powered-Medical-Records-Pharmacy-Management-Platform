@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}MedTrack — Smart Pharmacy Suite{% endblock %}</title>
+  
+  <!-- SEO & Description -->
+  <meta name="description" content="MedTrack is a modern, B2B pharmacy inventory dashboard and B2C patient medication safety companion with verified QR receipts and guardrailed AI RAG support.">
+  
+  <!-- Fonts & Stylesheet -->
+  <link rel="stylesheet" href="/static/css/styles.css">
+  {% block styles %}{% endblock %}
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="logo-container">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M4.5 10.5C3.67 10.5 3 11.17 3 12s.67 1.5 1.5 1.5h15c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5h-15z M10.5 4.5C10.5 3.67 11.17 3 12 3s1.5.67 1.5 1.5v15c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5v-15z" />
+          </svg>
+        </div>
+        <span class="logo-text">MedTrack</span>
+      </div>
+      
+      <nav style="margin-bottom: 2rem;">
+        <ul class="nav-links">
+          <li class="nav-item {% block nav_dashboard %}{% endblock %}" id="nav-dash">
+            <a href="/dashboard">
+              <svg viewBox="0 0 24 24">
+                <rect x="3" y="3" width="7" height="9" rx="1" />
+                <rect x="14" y="3" width="7" height="5" rx="1" />
+                <rect x="14" y="12" width="7" height="9" rx="1" />
+                <rect x="3" y="16" width="7" height="5" rx="1" />
+              </svg>
+              <span>Inventory Portal</span>
+            </a>
+          </li>
+          <li class="nav-item {% block nav_billing %}{% endblock %}" id="nav-bill">
+            <a href="/billing">
+              <svg viewBox="0 0 24 24">
+                <rect x="2" y="4" width="20" height="16" rx="2" />
+                <line x1="12" y1="4" x2="12" y2="20" />
+                <line x1="2" y1="10" x2="22" y2="10" />
+              </svg>
+              <span>Billing & QR Bridge</span>
+            </a>
+          </li>
+          <li class="nav-item {% block nav_patient %}{% endblock %}" id="nav-pat">
+            <a href="/patient">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+              </svg>
+              <span>Patient Companion</span>
+            </a>
+          </li>
+          <li class="nav-item {% block nav_monitoring %}{% endblock %}" id="nav-mon">
+            <a href="/monitoring">
+              <svg viewBox="0 0 24 24">
+                <line x1="18" y1="20" x2="18" y2="10" />
+                <line x1="12" y1="20" x2="12" y2="4" />
+                <line x1="6" y1="20" x2="6" y2="14" />
+              </svg>
+              <span>MLOps Metrics</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <p>Operational Status</p>
+        <div class="status">
+          <div class="status-dot"></div>
+          <span>Active & Secure</span>
+        </div>
+      </div>
+    </aside>
+    
+    <!-- Main Content Area -->
+    <main class="main-content">
+      {% block content %}{% endblock %}
+    </main>
+
+  </div>
+
+  {% block scripts_footer %}{% endblock %}
+</body>
+</html>

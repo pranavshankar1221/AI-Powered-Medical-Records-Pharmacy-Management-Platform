@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}MedTrack — Smart Billing QR Bridge{% endblock %}
+
+{% block nav_billing %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Smart Billing & QR Bridge</h1>
+    <p class="page-subtitle">Assemble patient bills, define personalized dosing schedules, and encode receipt authenticity QR codes.</p>
+  </div>
+</div>
+
+<div class="billing-layout">
+  
+  <!-- Left Column: Cart Builder & Stocks -->
+  <div style="display: flex; flex-direction: column; gap: 2rem;">
+    
+    <!-- Step 1: Patient Details -->
+    <div class="glass-card">
+      <h3 style="font-family: var(--font-title); font-size: 1.25rem; color: var(--text-bright); margin-bottom: 1.25rem;">1. Transaction Information</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label for="bill-patient-name">Patient Name</label>
+          <input type="text" class="form-control" id="bill-patient-name" placeholder="Enter patient's full name" required>
+        </div>
+        <div class="form-group">
+          <label for="bill-pharmacist-name">Pharmacist / Operator</label>
+          <input type="text" class="form-control" id="bill-pharmacist-name" value="Dr. Samantha Intern" required>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Medicine Picker & Cart -->
+    <div class="glass-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h3 style="font-family: var(--font-title); font-size: 1.25rem; color: var(--text-bright);">2. Prescribed Medications</h3>
+        
+        <div style="position: relative; width: 300px;">
+          <input type="text" class="form-control" id="med-search" placeholder="Search active medicine stocks..." autocomplete="off">
+          <div id="search-dropdown" style="position: absolute; width: 100%; top: 100%; left: 0; background: #0c0f24; border: 1px solid var(--border-glass); border-radius: var(--radius-sm); z-index: 50; max-height: 250px; overflow-y: auto; display: none;">
+            <!-- Dropdown options populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Cart Listing -->
+      <div class="billing-cart" id="cart-container">
+        <div style="text-align: center; color: var(--text-muted); padding: 3rem; font-size: 0.95rem;">
+          No items added. Use the search bar above to look up medicines and add them to the bill.
+        </div>
+      </div>
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; border-top: 1px solid var(--border-glass); padding-top: 1.5rem;">
+        <div>
+          <span style="color: var(--text-muted); font-size: 0.95rem;">Grand Total:</span>
+          <span style="font-family: var(--font-title); font-size: 1.8rem; font-weight: 700; color: var(--primary); margin-left: 0.5rem;" id="grand-total">$0.00</span>
+        </div>
+        <button class="btn btn-primary" onclick="submitInvoice()">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.25rem;">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+            <polyline points="10 9 9 9 8 9" />
+          </svg>
+          Generate Invoice & Receipt QR
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Right Column: Billing History List -->
+  <div class="glass-card">
+    <h3 style="font-family: var(--font-title); font-size: 1.25rem; color: var(--text-bright); margin-bottom: 1.25rem;">Recent Receipts</h3>
+    <div style="display: flex; flex-direction: column; gap: 0.75rem;" id="recent-invoices-container">
+      <div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 2rem;">Loading history...</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- RECEIPT MODAL VIEW -->
+<div class="modal-backdrop" id="receipt-modal">
+  <div class="modal-window" style="max-width: 450px;">
+    
+    <div class="receipt-preview">
+      
+      <div class="receipt-header">
+        <h2 class="receipt-title" id="receipt-pharmacy">MEDTRACK PHARMACY</h2>
+        <p style="font-size: 0.75rem; color: #666; margin-top: 0.25rem;">128 MLOps Innovation Highway</p>
+        <p style="font-size: 0.75rem; color: #666;" id="receipt-date">Date: 2026-06-08</p>
+      </div>
+
+      <div style="font-size: 0.8rem; margin-bottom: 1rem; color: #333;">
+        <div><strong>Invoice:</strong> <span id="receipt-num">—</span></div>
+        <div><strong>Patient:</strong> <span id="receipt-pat">—</span></div>
+        <div><strong>Pharmacist:</strong> <span id="receipt-phm">—</span></div>
+      </div>
+
+      <div class="receipt-divider"></div>
+      
+      <div id="receipt-items-container" style="margin-bottom: 1rem;">
+        <!-- Items inserted by JS -->
+      </div>
+      
+      <div class="receipt-divider"></div>
+
+      <div class="receipt-row" style="font-weight: 700; font-size: 1rem; color: #000;">
+        <span>TOTAL AMOUNT:</span>
+        <span id="receipt-total">$0.00</span>
+      </div>
+
+      <!-- QR Integrity Scanner Target -->
+      <div class="receipt-qr-area">
+        <img id="receipt-qr-img" src="" alt="Invoice Verification QR">
+        <p style="font-size: 0.7rem; color: #555; text-align: center; margin-top: 0.75rem; font-weight: 600;">
+          🔒 SECURE DRUG INTEGRITY QR CODE
+        </p>
+        <p style="font-size: 0.6rem; color: #888; text-align: center; margin-top: 0.25rem;">
+          Scan with the Patient Companion App to verify authenticity and import to digital medicine cabinet.
+        </p>
+      </div>
+
+      <div style="margin-top: 1.5rem; text-align: center;">
+        <button class="btn btn-secondary btn-sm" onclick="closeReceiptModal()" style="background: #e2e8f0; color: #334155; border: none; font-family: sans-serif; font-weight: bold; width: 100%;">
+          Close Receipt
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts_footer %}
+<script src="/static/js/billing.js"></script>
+{% endblock %}

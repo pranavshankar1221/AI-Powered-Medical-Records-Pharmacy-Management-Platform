@@ -1,0 +1,9 @@
+flask
+flask-cors
+sqlalchemy
+qrcode[pil]
+sentence-transformers
+faiss-cpu
+google-generativeai
+mlflow
+python-dotenv

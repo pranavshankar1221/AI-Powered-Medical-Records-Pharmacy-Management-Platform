@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}MedTrack — Patient Safety Companion{% endblock %}
+
+{% block nav_patient %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Patient Companion Portal</h1>
+    <p class="page-subtitle">Verify medication authenticity, view intake schedules, and chat with the RAG guardrailed chatbot.</p>
+  </div>
+</div>
+
+<div class="patient-layout">
+  
+  <!-- Left Column: Cabinet & Calendar -->
+  <div style="display: flex; flex-direction: column; gap: 2rem;">
+    
+    <!-- QR Receipt Scanner Simulator -->
+    <div class="glass-card">
+      <h3 style="font-family: var(--font-title); font-size: 1.25rem; color: var(--text-bright); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--primary)" stroke-width="2">
+          <rect x="2" y="2" width="20" height="20" rx="2" />
+          <path d="M7 7h4v4H7zm6 0h4v4h-4zm-6 6h4v4H7z" />
+        </svg>
+        Load Digital Medicine Cabinet
+      </h3>
+      
+      <div class="scanner-container" id="scanner-view">
+        <div class="scanner-animation">
+          <div class="scanner-laser"></div>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); text-align: center; margin-bottom: 1.5rem; max-width: 320px;">
+          Paste a QR payload string from your invoice receipt to verify batch integrity.
+        </p>
+        
+        <div class="form-group" style="width: 100%; max-width: 400px; display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+          <input type="text" class="form-control" id="patient-qr-input" placeholder="Paste receipt QR string here...">
+          <button class="btn btn-primary" onclick="simulatePatientScan()">Scan</button>
+        </div>
+        
+        <button class="btn btn-secondary btn-sm" onclick="loadSampleReceiptQR()">Load Sample Receipt QR</button>
+      </div>
+    </div>
+
+    <!-- Digital Medicine Cabinet Cards -->
+    <div class="glass-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 style="font-family: var(--font-title); font-size: 1.25rem; color: var(--text-bright);">Your Medicine Cabinet</h3>
+        <button class="btn btn-sm btn-danger" onclick="clearCabinet()">Clear Cabinet</button>
+      </div>
+      
+      <div class="cabinet-grid" id="cabinet-container">
+        <!-- Cards loaded by JS or fallback empty state -->
+        <div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 3rem; font-size: 0.95rem;">
+          Your digital cabinet is currently empty. Scan a receipt QR code above to load your medications.
+        </div>
+      </div>
+    </div>
+
+    <!-- Intake Schedule Calendar -->
+    <div class="glass-card">
+      <h3 style="font-family: var(--font-title); font-size: 1.25rem; color: var(--text-bright);">Weekly Intake Calendar</h3>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">Daily schedules parsed dynamically from doctor instructions.</p>
+      
+      <div class="calendar-grid" id="calendar-container">
+        <div class="calendar-slot">
+          <div class="calendar-slot-title">Morning</div>
+          <div style="color: var(--text-muted); font-size: 0.75rem; font-style: italic;">No medications scheduled.</div>
+        </div>
+        <div class="calendar-slot">
+          <div class="calendar-slot-title">Afternoon</div>
+          <div style="color: var(--text-muted); font-size: 0.75rem; font-style: italic;">No medications scheduled.</div>
+        </div>
+        <div class="calendar-slot">
+          <div class="calendar-slot-title">Evening</div>
+          <div style="color: var(--text-muted); font-size: 0.75rem; font-style: italic;">No medications scheduled.</div>
+        </div>
+        <div class="calendar-slot">
+          <div class="calendar-slot-title">Night</div>
+          <div style="color: var(--text-muted); font-size: 0.75rem; font-style: italic;">No medications scheduled.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right Column: Guardrailed RAG AI Chatbot -->
+  <div class="glass-card" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+    <div>
+      <h3 style="font-family: var(--font-title); font-size: 1.25rem; color: var(--text-bright); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--primary)" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+        MedTrack AI Advisor
+      </h3>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+        Guardrailed RAG Assistant. Ask questions scoped strictly to your verified medicine batch details.
+      </p>
+
+      <div class="chat-container">
+        <div class="chat-header">
+          <div class="chat-header-status"></div>
+          <span class="chat-header-title">Grounded Medical Agent</span>
+        </div>
+
+        <div class="chat-messages" id="chat-messages-container">
+          <div class="chat-msg bot">
+            Hello! I am your MedTrack AI Advisor. Once you load medicines into your cabinet above, I can help answer questions about:
+            <ul style="margin-left: 1.25rem; margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
+              <li>Food-drug & drug-drug interactions</li>
+              <li>Dosing details & missed dose actions</li>
+              <li>Side effects & safety warnings</li>
+            </ul>
+            <p style="margin-top: 0.75rem; font-size: 0.8rem; color: var(--status-warning);">
+              ⚠️ Disclaimers apply. I answer based on verified data only. Consult your doctor for medical advice.
+            </p>
+          </div>
+        </div>
+
+        <!-- Suggestion list chips -->
+        <div class="chat-suggestions" id="chat-suggestions-box" style="display: none;">
+          <!-- Suggestions chips generated dynamically -->
+        </div>
+
+        <div class="chat-input-area">
+          <input type="text" class="form-control" id="chat-input" placeholder="Ask about interactions, dosage..." onkeydown="handleChatKeyDown(event)">
+          <button class="btn btn-primary" onclick="sendChatMessage()">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts_footer %}
+<script src="/static/js/patient-app.js"></script>
+{% endblock %}

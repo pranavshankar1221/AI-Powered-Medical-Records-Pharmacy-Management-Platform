@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}MedTrack — B2B Pharmacy Inventory Portal{% endblock %}
+
+{% block nav_dashboard %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Inventory Operations</h1>
+    <p class="page-subtitle">Track, filter, and ingest medicine batches with real-time proactive safety alerts.</p>
+  </div>
+  <div>
+    <button class="btn btn-primary" onclick="openScanModal()">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.25rem;">
+        <path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z" />
+      </svg>
+      Log New Shipment
+    </button>
+  </div>
+</div>
+
+<!-- Proactive Alerts Panel -->
+<div class="glass-card" style="margin-bottom: 2.5rem; border-color: rgba(255, 23, 68, 0.15);" id="alerts-card">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <h3 style="font-family: var(--font-title); display: flex; align-items: center; gap: 0.5rem; color: var(--text-bright);">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--status-critical)" stroke-width="2">
+        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+        <line x1="12" y1="9" x2="12" y2="13" />
+        <line x1="12" y1="17" x2="12.01" y2="17" />
+      </svg>
+      Proactive System Safety Alerts
+    </h3>
+    <span class="badge warning" id="alerts-count-badge">0 Active Alerts</span>
+  </div>
+  <div class="alert-list" id="alerts-container">
+    <div style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 1rem;">
+      No critical stock or expiration alerts active at this moment.
+    </div>
+  </div>
+</div>
+
+<!-- Metrics Counters -->
+<div class="metrics-grid">
+  <div class="metric-card">
+    <div class="metric-info">
+      <h4>Medicine Catalogue</h4>
+      <div class="value" id="stat-medicines">—</div>
+    </div>
+    <div class="metric-icon">
+      <svg viewBox="0 0 24 24"><path d="M4.5 10.5h15M10.5 4.5v15" /></svg>
+    </div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-info">
+      <h4>Total Stock Units</h4>
+      <div class="value" id="stat-total-stock">—</div>
+    </div>
+    <div class="metric-icon success">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M9 17v-5h6v5" /></svg>
+    </div>
+  </div>
+  <div class="metric-card warning" id="metric-low-stock">
+    <div class="metric-info">
+      <h4>Low Stock Batches</h4>
+      <div class="value" id="stat-low-stock">—</div>
+    </div>
+    <div class="metric-icon">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+    </div>
+  </div>
+  <div class="metric-card critical" id="metric-expiring">
+    <div class="metric-info">
+      <h4>Near Expiry (<30d)</h4>
+      <div class="value" id="stat-expiring">—</div>
+    </div>
+    <div class="metric-icon">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+    </div>
+  </div>
+</div>
+
+<!-- Main Inventory Table -->
+<div class="glass-card">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+    <h3 style="font-family: var(--font-title); font-size: 1.3rem; color: var(--text-bright);">Active Batch Ledger</h3>
+    
+    <!-- Filters & Search -->
+    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; flex: 1; justify-content: flex-end;">
+      <input type="text" class="form-control" placeholder="Search by name, code..." id="search-input" style="max-width: 250px;">
+      
+      <select class="form-control" id="filter-status" style="max-width: 150px;">
+        <option value="">All Statuses</option>
+        <option value="active" selected>Active Only</option>
+        <option value="expired">Expired Only</option>
+        <option value="recalled">Recalled Only</option>
+      </select>
+      
+      <button class="btn btn-secondary" onclick="resetFilters()">Reset</button>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>Medicine</th>
+          <th>Batch Code</th>
+          <th>Stock Units</th>
+          <th>Expiry Date</th>
+          <th>Supplier</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="inventory-table-body">
+        <tr>
+          <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 3rem;">Loading inventory data...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- LOG SHIPMENT MODAL -->
+<div class="modal-backdrop" id="scan-modal">
+  <div class="modal-window glass-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-glass); padding-bottom: 0.75rem;">
+      <h3 style="font-family: var(--font-title); color: var(--text-bright);">Log New Medicine Shipment</h3>
+      <button onclick="closeScanModal()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.25rem;">&times;</button>
+    </div>
+    
+    <!-- Modal Tabs -->
+    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-glass); padding-bottom: 0.5rem;">
+      <button class="btn btn-sm btn-primary" id="tab-qr" onclick="setScanMode('qr')">Simulate QR Scan</button>
+      <button class="btn btn-sm btn-secondary" id="tab-manual" onclick="setScanMode('manual')">Manual Entry</button>
+    </div>
+
+    <!-- QR Scan Simulator View -->
+    <div id="qr-scan-view">
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Paste a simulated manufacturer QR payload JSON structure below (e.g., from incoming shipments). This tests automated batch verification.
+      </p>
+      
+      <div class="form-group">
+        <label for="qr-payload-input">Manufacturer QR Code Payload</label>
+        <textarea class="form-control" id="qr-payload-input" rows="5" style="font-family: monospace; font-size: 0.8rem;" placeholder='{
+  "medicine_id": "MED_001",
+  "batch_number": "BATCH-AMOX-2026-X11",
+  "manufacture_date": "2026-02-10",
+  "expiry_date": "2028-02-09",
+  "quantity_received": 150,
+  "supplier": "Standard Pharma Distributors",
+  "manufacturer_qr_data": "ORIGINAL_MANUFACTURER_SIGNED_CERT"
+}'></textarea>
+      </div>
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+        <button class="btn btn-secondary btn-sm" onclick="loadSampleManufacturerQR()">Load Sample QR Data</button>
+        <button class="btn btn-primary" onclick="submitQRScan()">Scan & Verify Batch</button>
+      </div>
+    </div>
+
+    <!-- Manual Entry View -->
+    <div id="manual-entry-view" style="display: none;">
+      <form id="manual-shipment-form" onsubmit="submitManualForm(event)">
+        <div class="form-group">
+          <label>Select Medicine</label>
+          <select class="form-control" id="manual-med-id" required>
+            <option value="">Choose medicine...</option>
+          </select>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label>Batch Number</label>
+            <input type="text" class="form-control" id="manual-batch-num" placeholder="e.g. BATCH-2026-X8" required>
+          </div>
+          <div class="form-group">
+            <label>Quantity Received</label>
+            <input type="number" class="form-control" id="manual-qty" min="1" placeholder="e.g. 100" required>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label>Manufacture Date</label>
+            <input type="date" class="form-control" id="manual-mfg-date">
+          </div>
+          <div class="form-group">
+            <label>Expiry Date</label>
+            <input type="date" class="form-control" id="manual-expiry-date" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Supplier Name</label>
+          <input type="text" class="form-control" id="manual-supplier" placeholder="e.g. Apollo Supply Chain">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeScanModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Log Shipment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts_footer %}
+<script src="/static/js/pharmacy-dashboard.js"></script>
+{% endblock %}
