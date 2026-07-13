@@ -1,552 +1,375 @@
-# MEDIQR MLOps
+##MedFlow AI
+### AI-Powered Medical Records & Pharmacy Management Platform
 
-## AI-Powered Pharmacy Inventory, Billing, Patient Guidance & MLOps Platform
-
-![Python](https://img.shields.io/badge/Python-3.10+-blue)
-![FastAPI](https://img.shields.io/badge/FastAPI-Backend-green)
-![React](https://img.shields.io/badge/React-Frontend-blue)
-![MySQL](https://img.shields.io/badge/MySQL-Database-orange)
-![MLflow](https://img.shields.io/badge/MLflow-MLOps-purple)
-![Docker](https://img.shields.io/badge/Docker-Containerization-blue)
+> **MedFlow AI** is a modern healthcare management platform that combines secure medical record management, pharmacy operations, graph-based relationship analytics, and AI-powered clinical assistance into a single application.
 
 ---
 
-# Project Overview
+# Table of Contents
 
-MEDIQR is a next-generation pharmacy management ecosystem that combines inventory management, QR-based billing, patient medicine guidance, machine learning forecasting, AI-powered medicine assistance, and MLOps practices into a single platform.
-
-The system bridges the gap between:
-
-* Pharmacy Operations (B2B)
-* Patient Healthcare Assistance (B2C)
-
-while implementing industry-standard MLOps workflows for model training, deployment, monitoring, and reproducibility.
-
----
-
-# Problem Statement
-
-Pharmacies face several challenges:
-
-### Inventory Issues
-
-* Manual stock management
-* Stock shortages
-* Overstocking
-* Expired medicines remaining unnoticed
-
-### Billing Issues
-
-* Lack of patient engagement after billing
-* No digital medicine tracking
-
-### Patient Issues
-
-Patients often do not know:
-
-* Purpose of medicines
-* Side effects
-* Dosage timing
-* Food restrictions
-
-### Business Issues
-
-* Poor inventory forecasting
-* Revenue loss due to expired stock
-* Inefficient stock replenishment
+- Overview
+- Features
+- Tech Stack
+- System Architecture
+- Project Structure
+- Core Modules
+- AI Integration (Sarvam AI)
+- Graph Analytics (Neo4j)
+- Mobile Application (Expo)
+- Installation
+- Environment Variables
+- Running the Project
+- API Features
+- Future Enhancements
+- License
+- Author
 
 ---
 
-# Proposed Solution
+# Overview
 
-MEDIQR provides:
+MedFlow AI is a **Full-Stack Healthcare Management System** developed using **FastAPI**, **React (Vite)**, **PostgreSQL**, **Neo4j**, and **Sarvam AI**.
 
-### Smart Inventory Management
+The platform provides secure healthcare management through **Role-Based Access Control (RBAC)**, enabling different user experiences for administrators, pharmacists, and patients.
 
-* Medicine stock tracking
-* Batch management
-* Expiry monitoring
-* Low-stock alerts
+Unlike traditional healthcare systems that only store relational data, MedFlow AI also utilizes **Neo4j Graph Database** to model complex relationships among patients, prescriptions, medications, doctors, and pharmacies. This enables intelligent graph queries and healthcare analytics.
 
-### Smart Billing System
+Additionally, the platform integrates **Sarvam AI** to provide AI-powered clinical assistance, including medication guidance, dosage suggestions, and drug interaction warnings.
 
-* Digital billing
-* Secure QR generation
-* Automatic stock deduction
-
-### Patient Companion
-
-* QR-based medicine access
-* Medicine purpose explanation
-* Dosage instructions
-* Reminder system
-
-### AI & Machine Learning
-
-* Demand forecasting
-* Expiry risk prediction
-* AI medicine assistant
-* RAG-powered medicine guidance
-
-### MLOps Pipeline
-
-* MLflow
-* DVC
-* Docker
-* Prometheus
-* Grafana
+An optional **Expo (React Native)** mobile application allows healthcare professionals and patients to access the same backend services on Android and iOS.
 
 ---
 
-# Key Features
+#  Key Features
 
-## Pharmacy Side
+## Authentication & Security
 
-### Inventory Management
-
-* Add medicines
-* Update stock
-* Delete medicines
-* Batch tracking
-* Expiry tracking
-
-### Billing System
-
-* Generate bills
-* Calculate totals
-* Reduce inventory automatically
-* Generate QR receipts
-
-### Analytics Dashboard
-
-* Sales analytics
-* Inventory reports
-* Demand forecasts
-* Expiry alerts
+- JWT Authentication
+- Role-Based Access Control (RBAC)
+- Protected API Endpoints
+- Secure Password Hashing
+- Session Management
 
 ---
 
-## Patient Side
+##  User Roles
 
-### QR Scan
+### Admin
 
-Patient scans QR from bill.
-
-Displays:
-
-* Medicine name
-* Purpose
-* Dosage instructions
-* Side effects
-* Food instructions
-* Billing amount
-
-### Reminder System
-
-* Morning reminders
-* Afternoon reminders
-* Evening reminders
-* Custom reminders
-
-### AI Assistant
-
-Patients can ask:
-
-* What is this medicine used for?
-* What are its side effects?
-* When should I take it?
-
-The assistant only provides verified information and never changes prescriptions.
+- Dashboard
+- User Management
+- Analytics
+- Reports
+- System Monitoring
+- Manage Patients
+- Manage Pharmacists
 
 ---
 
-# System Architecture
+###  Pharmacist
 
-```text
-                 React Frontend
-                        │
-                        ▼
-                 FastAPI Backend
-                        │
-        ┌───────────────┼───────────────┐
-        ▼               ▼               ▼
+- Prescription Verification
+- Inventory Management
+- Medicine Tracking
+- Prescription History
+- Medicine Availability
 
-     MySQL DB      ML Services     QR Services
+---
 
-        ▼               ▼               ▼
+###  Patient
 
-   Inventory       Demand Model     QR Billing
-   Billing         Expiry Model     QR Scanner
+- View Medical Records
+- View Prescriptions
+- Personal Dashboard
+- Health Summary
+- Profile Management
+
+---
+
+# Highlighted Technologies
+
+---
+
+# Neo4j Graph Database
+
+Unlike traditional SQL databases, **Neo4j** stores relationships as first-class entities.
+
+### Why Neo4j?
+
+Healthcare data contains complex relationships such as:
+
+```
+Patient
+   │
+Visited
+   │
+Doctor
+   │
+Prescribed
+   │
+Medicine
+   │
+Available At
+   │
+Pharmacy
 ```
 
----
+Neo4j allows the application to analyze these relationships efficiently.
 
-#  User Roles
+### Example Use Cases
 
-## Admin
+- Drug Interaction Networks
+- Patient Prescription History
+- Frequently Prescribed Medicines
+- Doctor-Patient Relationship Analysis
+- Pharmacy Supply Network
+- Disease Similarity Analysis
+- Recommendation Systems
 
-* Manage users
-* View analytics
-* Monitor system
+### Benefits
 
-## Pharmacist
-
-* Manage inventory
-* Create bills
-* Generate QR receipts
-* View stock forecasts
-
-## Patient
-
-* Scan QR bills
-* View medicine details
-* Create reminders
-* Use AI assistant
+- High-performance graph traversal
+- Relationship analytics
+- Better visualization
+- Real-time healthcare insights
+- Network-based recommendations
 
 ---
 
-# Technology Stack
+#  Sarvam AI Integration
 
-| Layer               | Technology       |
-| ------------------- | ---------------- |
-| Frontend            | React + Vite     |
-| Backend             | FastAPI          |
-| Database            | MySQL            |
-| Authentication      | JWT              |
-| ORM                 | SQLAlchemy       |
-| QR Generation       | qrcode           |
-| QR Scanner          | React QR Scanner |
-| ML                  | Scikit-Learn     |
-| Experiment Tracking | MLflow           |
-| Dataset Versioning  | DVC              |
-| Monitoring          | Prometheus       |
-| Visualization       | Grafana          |
-| Containerization    | Docker           |
-| Deployment          | AWS ECS Fargate  |
+MedFlow AI integrates **Sarvam AI** as an intelligent clinical assistant.
 
----
+The AI module helps healthcare professionals make better decisions by analyzing medical prompts.
 
-# Database Design
+### AI Features
 
-## Users
+- Medicine Suggestions
+- Dosage Recommendations
+- Drug Interaction Warnings
+- Prescription Summarization
+- Clinical Notes Generation
+- Medical Question Answering
+- Healthcare Assistant Chat
 
-```sql
-id
-name
-email
-password_hash
-role
-created_at
+### Example API
+
+```
+POST /ai/suggest
 ```
 
-## Medicines
-
-```sql
-id
-medicine_name
-batch_number
-manufacturer
-category
-quantity
-price_per_unit
-expiry_date
-purpose
-dosage_instruction
-side_effects
-food_instruction
-```
-
-## Bills
-
-```sql
-id
-bill_number
-bill_token
-patient_name
-patient_phone
-total_amount
-created_at
-```
-
-## Bill Items
-
-```sql
-id
-bill_id
-medicine_id
-quantity
-unit_price
-subtotal
-```
-
-## Reminders
-
-```sql
-id
-patient_id
-medicine_id
-reminder_time
-reminder_type
-status
-```
-
----
-
-# Secure QR Workflow
-
-### Why Store Only Bill Token?
-
-Instead of storing:
+Example Request
 
 ```json
 {
-  "medicine":"Paracetamol",
-  "amount":120
+    "prompt": "Patient is prescribed Paracetamol and Ibuprofen."
 }
 ```
 
-Store:
+Example Response
 
 ```json
 {
-  "bill_token":"abc123xyz"
+    "suggestion": "Monitor dosage intervals. Avoid exceeding recommended daily limits."
 }
 ```
 
-Benefits:
+### Benefits
 
-* Secure
-* Lightweight
-* Scalable
-* Tamper-resistant
+- Faster clinical decisions
+- Reduced medication errors
+- AI-powered healthcare assistance
+- Improved pharmacist productivity
 
-Workflow:
+---
 
-```text
-Bill Generated
-      ↓
-QR Contains Bill Token
-      ↓
-Patient Scans QR
-      ↓
-Backend Validates Token
-      ↓
-Medicine Information Displayed
+# Expo Mobile Application
+
+The project includes an optional **Expo React Native** application.
+
+The mobile app consumes the same FastAPI backend used by the web application.
+
+### Mobile Features
+
+- Secure Login
+- JWT Authentication
+- Patient Dashboard
+- Prescription Viewing
+- Medicine Information
+- Notifications
+- Profile Management
+
+### Advantages
+
+- Cross-platform
+- Android Support
+- iOS Support
+- Shared Backend
+- Faster Development
+- Easy Deployment
+
+---
+
+#  Tech Stack
+
+| Layer | Technology |
+|----------|----------------|
+| Backend | FastAPI |
+| Frontend | React (Vite) |
+| Database | PostgreSQL |
+| Graph Database | Neo4j |
+| ORM | SQLAlchemy |
+| Authentication | JWT |
+| Password Security | Passlib |
+| AI Assistant | Sarvam AI |
+| Mobile | Expo (React Native) |
+| Routing | React Router |
+| Icons | React Icons |
+| API Testing | Swagger UI |
+| Environment | python-dotenv |
+| Server | Uvicorn |
+| Package Manager | uv |
+| Deployment | Docker (Optional) |
+
+---
+
+#  Project Structure
+
+```
+MedFlow-AI/
+│
+├── backend/
+│   ├── database/
+│   ├── models/
+│   ├── routes/
+│   ├── services/
+│   │      └── ai_service.py
+│   ├── utils/
+│   ├── tests/
+│   ├── neo4j_driver.py
+│   └── main.py
+│
+├── frontend/
+│   ├── src/
+│   ├── pages/
+│   ├── components/
+│   └── assets/
+│
+├── mobile/
+│   └── Expo App
+│
+├── .env
+├── README.md
+└── requirements.txt
 ```
 
 ---
 
-# Machine Learning Modules
-
-## Demand Forecasting
-
-### Goal
-
-Predict medicine demand for the next 30 days.
-
-### Features
-
-* Past sales
-* Current stock
-* Category
-* Month
-* Season
-* Expiry days remaining
-
-### Model
-
-```python
-RandomForestRegressor
-```
-
-### Output
-
-```text
-Predicted Demand = 450 Units
-```
-
----
-
-## Expiry Risk Prediction
-
-### Goal
-
-Predict medicine batches likely to expire before sale.
-
-### Model
-
-```python
-RandomForestClassifier
-```
-
-### Output
-
-```text
-LOW
-MEDIUM
-HIGH
-```
-
----
-
-# MLOps Workflow
-
-```text
-Sales Data
-     ↓
-DVC Versioning
-     ↓
-Feature Engineering
-     ↓
-Model Training
-     ↓
-MLflow Tracking
-     ↓
-Model Registry
-     ↓
-Deployment
-     ↓
-Monitoring
-```
-
----
-
-# Monitoring & Observability
-
-## Prometheus
-
-Collects:
-
-* API latency
-* Request count
-* Error rate
-* CPU usage
-* Memory usage
-
-## Grafana
-
-Visualizes:
-
-* User activity
-* Inventory trends
-* Model metrics
-* System health
-
----
-
-#  AI Assistant & RAG
-
-Workflow:
-
-```text
-Patient Query
-      ↓
-Embedding Model
-      ↓
-FAISS Search
-      ↓
-Relevant Medicine Context
-      ↓
-Gemini API
-      ↓
-Safe Response
-```
-
-Safety Rules:
-
-* No diagnosis
-* No prescription changes
-* No dosage modifications
-
----
-
-# API Documentation
+#  Core Modules
 
 ## Authentication
 
-```http
-POST /auth/register
-POST /auth/login
+- Login
+- Logout
+- JWT
+- Protected Routes
+
+---
+
+## User Management
+
+- Admin CRUD
+- Pharmacist CRUD
+- Patient CRUD
+
+---
+
+## Medical Records
+
+- Patient Records
+- Prescriptions
+- Medical History
+- Health Summary
+
+---
+
+## Pharmacy Module
+
+- Inventory
+- Stock Management
+- Medicine Tracking
+- Prescription Handling
+
+---
+
+## Analytics
+
+- User Statistics
+- Inventory Reports
+- Medicine Usage
+- Graph Analytics (Neo4j)
+
+---
+
+#  System Architecture
+
 ```
-
-## Medicines
-
-```http
-GET /medicines
-POST /medicines
-PUT /medicines/{id}
-DELETE /medicines/{id}
-```
-
-## Billing
-
-```http
-POST /billing/create
-GET /billing/{id}
-```
-
-## Patient
-
-```http
-GET /patient/bill/{token}
-POST /patient/reminders
-GET /patient/reminders
-```
-
-## Machine Learning
-
-```http
-GET /ml/predict-demand/{id}
-GET /ml/expiry-risk/{id}
+                    React Web
+                         │
+                         │
+                 React Native (Expo)
+                         │
+                         ▼
+                 FastAPI Backend
+        ┌──────────────┼──────────────┐
+        │              │              │
+        ▼              ▼              ▼
+ PostgreSQL        Neo4j        Sarvam AI
+(Relational DB) (Graph DB)   (LLM Assistant)
 ```
 
 ---
 
-# Project Structure
+# Environment Variables
 
-```text
-mediqr-mlops/
-│
-├── backend/
-│   ├── app/
-│   ├── routes/
-│   ├── models/
-│   ├── schemas/
-│   ├── services/
-│   ├── ml/
-│   └── utils/
-│
-├── frontend/
-│   ├── pages/
-│   ├── components/
-│   └── services/
-│
-├── mlops/
-│   ├── data/
-│   ├── models/
-│   ├── training/
-│   └── dvc.yaml
-│
-├── docker-compose.yml
-└── README.md
+Create a `.env` file inside the backend.
+
+```env
+DATABASE_URL=
+
+JWT_SECRET_KEY=
+
+NEO4J_URI=
+
+NEO4J_USER=
+
+NEO4J_PASSWORD=
+
+SARVAM_API_KEY=
 ```
 
 ---
 
-# Local Setup
+#  Installation
+
+## Clone Repository
+
+```bash
+git clone https://github.com/yourusername/MedFlow-AI.git
+
+cd MedFlow-AI
+```
+
+---
 
 ## Backend
 
 ```bash
 cd backend
 
-python -m venv venv
+uv pip install -r requirements.txt
 
-venv\Scripts\activate
-
-pip install -r requirements.txt
-
-uvicorn app.main:app --reload
+uvicorn main:app --reload
 ```
 
 ---
@@ -563,156 +386,118 @@ npm run dev
 
 ---
 
-#  Docker Setup
+## Mobile
 
 ```bash
-docker-compose up --build
-```
+cd mobile
 
-Services:
+npm install
 
-* MySQL
-* FastAPI
-* React
-* MLflow
-* Prometheus
-* Grafana
-
----
-
-# End-to-End Testing
-
-### Pharmacy Workflow
-
-1. Login as Pharmacist
-2. Add Medicine Stock
-3. Verify Inventory
-4. View Expiry Alerts
-5. Create Bill
-6. Generate QR
-
-### Patient Workflow
-
-7. Scan QR
-8. View Medicine Details
-9. Set Reminder
-
-### ML Workflow
-
-10. Predict Demand
-11. Predict Expiry Risk
-12. Verify MLflow Tracking
-13. Verify Grafana Dashboard
-
----
-
-# Security Features
-
-* JWT Authentication
-* Password Hashing
-* Role-Based Access Control
-* Secure QR Tokens
-* API Validation
-* Environment Variables
-* HMAC Verification
-
----
-
-# AWS Deployment
-
-Services:
-
-* Amazon ECS Fargate
-* Amazon RDS MySQL
-* Application Load Balancer
-* Amazon ECR
-
-Deployment Flow:
-
-```text
-Developer
-    ↓
-GitHub
-    ↓
-Docker Build
-    ↓
-AWS ECR
-    ↓
-ECS Fargate
-    ↓
-Production
+expo start
 ```
 
 ---
 
-# Team Contributions
+## Neo4j
 
-## Member 1
+1. Install Neo4j Desktop or use Neo4j Aura.
 
-Backend Development
+2. Configure
 
-* FastAPI
-* MySQL
-* Authentication
-* Billing APIs
+```
+NEO4J_URI
 
-## Member 2
+NEO4J_USER
 
-Frontend Development
+NEO4J_PASSWORD
+```
 
-* React UI
-* QR Scanner
-* Patient Dashboard
+3. Seed sample graph
 
-## Member 3
-
-ML & MLOps
-
-* Demand Forecasting
-* Expiry Prediction
-* MLflow
-* DVC
-* Monitoring
+```bash
+python scripts/seed_graph.py
+```
 
 ---
 
-# Future Enhancements
+## Sarvam AI
 
-* OCR Prescription Reading
-* Voice-Based Medicine Guidance
-* Multi-Language Support
-* WhatsApp Reminder Bot
-* Blockchain Supply Chain Tracking
-* IoT Smart Medicine Cabinets
+Install
 
----
+```bash
+pip install sarvamai
+```
 
-# Key Technical Achievements
+Add API Key
 
-* Full Stack Development
-* REST API Design
-* JWT Authentication
-* QR Integration
-* Machine Learning Deployment
-* MLOps Implementation
-* Docker Containerization
-* Cloud Deployment Ready
-* Monitoring & Observability
+```
+SARVAM_API_KEY=YOUR_KEY
+```
 
----
+Start backend
 
-# Disclaimer
+```bash
+uvicorn main:app --reload
+```
 
-This platform provides medicine information only for educational and awareness purposes.
+Call
 
-Patients must always follow their doctor's prescription.
-
-The AI assistant never diagnoses diseases, modifies prescriptions, or recommends dosage changes.
+```
+POST /ai/suggest
+```
 
 ---
 
-# Conclusion
+#  Future Enhancements
 
-MEDIQR bridges the gap between pharmacy inventory management and patient healthcare assistance through AI, QR technology, predictive analytics, and production-grade MLOps practices.
+- Voice Assistant
+- OCR Prescription Scanner
+- Appointment Booking
+- Doctor Portal
+- AI Disease Prediction
+- Medicine Recommendation Engine
+- Drug Interaction Knowledge Graph
+- Notification System
+- Wearable Device Integration
+- Medical Report Summarization
+- Real-time Analytics Dashboard
 
-The platform improves pharmacy efficiency, reduces medicine wastage, enhances patient awareness, and demonstrates real-world deployment-ready machine learning workflows.
+---
+
+#  License
+
+This project is licensed under the **MIT License**.
+
+---
+
+#  Author
+
+**Pranav Shankar**
+
+AI & Full Stack Developer
+
+GitHub: https://github.com/pranavshankar1221
+
+---
+
+#  Support
+
+If you found this project helpful, consider giving it a **⭐ Star** on GitHub.
+
+Contributions, issues, and feature requests are always welcome!
+
+---
+
+##  Why MedFlow AI?
+
+MedFlow AI goes beyond a conventional healthcare management system by combining:
+
+-  Secure Role-Based Access Control (RBAC)
+-  Medical Records Management
+-  Pharmacy Inventory & Prescription Management
+- Neo4j Graph Analytics for healthcare relationship modeling
+-  Sarvam AI for intelligent clinical decision support
+-  Expo-powered cross-platform mobile application
+-  FastAPI backend with React frontend
+
+Together, these technologies create a scalable, intelligent, and modern healthcare platform capable of delivering smarter insights and improved patient care.
