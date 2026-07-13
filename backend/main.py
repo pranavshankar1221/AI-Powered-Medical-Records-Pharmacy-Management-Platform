@@ -1,7 +1,11 @@
-"""
-MEDIQR MLOPS — FastAPI Application Entry Point
-AI-Powered Pharmacy Inventory, Billing, Patient Guidance & Analytics Platform
-"""
+import sys
+from pathlib import Path
+
+# Add ai_module to sys.path to resolve ml imports locally
+AI_MODULE_PATH = Path(__file__).resolve().parent.parent / "ai_module"
+if AI_MODULE_PATH.exists():
+    sys.path.append(str(AI_MODULE_PATH))
+
 
 import logging
 from contextlib import asynccontextmanager
@@ -36,6 +40,13 @@ async def lifespan(app: FastAPI):
     init_db()
     logger.info("✅ Database tables initialized")
 
+    # Initialize Neo4j Graph DB
+    try:
+        from database.neo4j_db import init_neo4j_db
+        init_neo4j_db()
+    except Exception as e:
+        logger.error(f"⚠️ Failed to initialize Neo4j on startup: {e}")
+
     # Pre-load ML models
     try:
         from ml.serve import _get_demand_model, _get_expiry_model
@@ -69,6 +80,11 @@ async def lifespan(app: FastAPI):
 
     # Shutdown
     logger.info("👋 MEDIQR MLOPS shutting down...")
+    try:
+        from database.neo4j_db import close_neo4j_driver
+        close_neo4j_driver()
+    except Exception as e:
+        logger.error(f"Error closing Neo4j driver on shutdown: {e}")
 
 
 # ── Create Application ──────────────────────────────────────────────────────
@@ -113,7 +129,8 @@ from routes.billing import router as billing_router
 from routes.patient import router as patient_router
 from routes.ml import router as ml_router
 from routes.monitoring import router as monitoring_router
-
+from routes.medicine_graph import router as medicine_graph_router
+from routes.ai import router as ai_router
 app.include_router(auth_router)
 app.include_router(admin_router)
 app.include_router(inventory_router)
@@ -121,6 +138,8 @@ app.include_router(billing_router)
 app.include_router(patient_router)
 app.include_router(ml_router)
 app.include_router(monitoring_router)
+app.include_router(ai_router)
+app.include_router(medicine_graph_router)
 
 
 # ── Root Endpoint ────────────────────────────────────────────────────────────

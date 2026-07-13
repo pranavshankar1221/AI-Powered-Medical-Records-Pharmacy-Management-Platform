@@ -1,0 +1,23 @@
+stages:
+  - name: prepare_data
+    cmd: python ml/generate_synthetic_data.py
+    deps:
+      - ml/generate_synthetic_data.py
+    outs:
+      - data/raw/sales_history.csv
+      - data/raw/inventory_snapshot.csv
+
+  - name: train_models
+    cmd: python ml/train_pipeline.py
+    deps:
+      - ml/train_pipeline.py
+      - ml/demand_model.py
+      - ml/expiry_model.py
+      - data/raw/sales_history.csv
+      - data/raw/inventory_snapshot.csv
+    outs:
+      - data/models/demand_model.joblib
+      - data/models/expiry_model.joblib
+    metrics:
+      - data/metrics/demand_metrics.json
+      - data/metrics/expiry_metrics.json

@@ -92,7 +92,7 @@ def get_medicine(
 def create_medicine(
     req: MedicineCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(require_role("admin")),
+    current_user=Depends(require_role("admin", "pharmacist")),
 ):
     """Add a new medicine to the catalogue."""
     medicine_id = f"MED-{uuid.uuid4().hex[:8].upper()}"
@@ -128,7 +128,7 @@ def update_medicine(
     medicine_id: str,
     req: MedicineUpdate,
     db: Session = Depends(get_db),
-    current_user=Depends(require_role("admin")),
+    current_user=Depends(require_role("admin", "pharmacist")),
 ):
     """Update an existing medicine."""
     med = db.query(Medicine).filter(Medicine.medicine_id == medicine_id).first()
@@ -192,7 +192,7 @@ def list_batches(
 def create_batch(
     req: BatchCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(require_role("admin")),
+    current_user=Depends(require_role("admin", "pharmacist")),
 ):
     """Add a new inventory batch."""
     # Verify medicine exists

@@ -8,7 +8,7 @@ from typing import List, Optional
 
 class BillItem(BaseModel):
     medicine_id: str
-    batch_id: int
+    batch_id: Optional[int] = None
     quantity: int = Field(..., ge=1)
     dosage_instructions: Optional[str] = ""
 

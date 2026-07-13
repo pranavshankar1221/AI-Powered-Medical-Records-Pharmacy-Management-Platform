@@ -6,7 +6,11 @@ Main entry point for MedTrack. Registers Blueprints, sets up HTML page rendering
 from flask import Flask, render_template, jsonify, send_from_directory
 from flask_cors import CORS
 import os
+import sys
 from pathlib import Path
+
+# Add ai_module to sys.path to resolve RAG engine imports
+sys.path.insert(0, str(Path(__file__).resolve().parent / "ai_module"))
 
 import config
 from database.db import init_db

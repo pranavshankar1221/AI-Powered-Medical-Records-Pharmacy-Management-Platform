@@ -40,15 +40,40 @@ def create_bill(
         if not medicine:
             raise NotFoundException(f"Medicine {item.medicine_id}")
 
-        # Validate batch exists and has stock
-        batch = db.query(InventoryBatch).filter(InventoryBatch.id == item.batch_id).first()
-        if not batch:
-            raise NotFoundException(f"Batch {item.batch_id}")
-
-        if batch.quantity_remaining < item.quantity:
-            raise InsufficientStockException(
-                medicine.name, batch.quantity_remaining, item.quantity
+        # Validate batch exists and has stock (with FEFO auto-resolution fallback)
+        if item.batch_id:
+            batch = db.query(InventoryBatch).filter(InventoryBatch.id == item.batch_id).first()
+            if not batch:
+                raise NotFoundException(f"Batch {item.batch_id}")
+            if batch.quantity_remaining < item.quantity:
+                raise InsufficientStockException(
+                    medicine.name, batch.quantity_remaining, item.quantity
+                )
+        else:
+            # Auto-resolve oldest active batch with sufficient stock (FEFO)
+            batch = (
+                db.query(InventoryBatch)
+                .filter(
+                    InventoryBatch.medicine_id == item.medicine_id,
+                    InventoryBatch.status == "active",
+                    InventoryBatch.expiry_date > datetime.now(timezone.utc),
+                    InventoryBatch.quantity_remaining >= item.quantity
+                )
+                .order_by(InventoryBatch.expiry_date.asc())
+                .first()
             )
+            if not batch:
+                # Calculate total stock to report in InsufficientStockException
+                total_stock = 0
+                batches = db.query(InventoryBatch).filter(
+                    InventoryBatch.medicine_id == item.medicine_id,
+                    InventoryBatch.status == "active"
+                ).all()
+                for b in batches:
+                    total_stock += b.quantity_remaining
+                raise InsufficientStockException(
+                    medicine.name, total_stock, item.quantity
+                )
 
         # Calculate subtotal
         subtotal = medicine.unit_price * item.quantity
@@ -59,7 +84,7 @@ def create_bill(
 
         # Create invoice item
         inv_item = InvoiceItem(
-            batch_id=item.batch_id,
+            batch_id=batch.id,
             medicine_id=item.medicine_id,
             quantity=item.quantity,
             unit_price=medicine.unit_price,

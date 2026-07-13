@@ -12,10 +12,18 @@ load_dotenv()
 # ── Paths ────────────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
-MODELS_DIR = DATA_DIR / "models"
+
+# Reference ai_module if it is a sibling directory (local dev)
+AI_MODULE_DIR = BASE_DIR.parent / "ai_module"
+if (AI_MODULE_DIR / "data").exists():
+    MODELS_DIR = AI_MODULE_DIR / "data" / "models"
+    METRICS_DIR = AI_MODULE_DIR / "data" / "metrics"
+else:
+    MODELS_DIR = DATA_DIR / "models"
+    METRICS_DIR = DATA_DIR / "metrics"
+
 QR_DIR = DATA_DIR / "qr_codes"
 MLRUNS_DIR = DATA_DIR / "mlruns"
-METRICS_DIR = DATA_DIR / "metrics"
 RAW_DATA_DIR = DATA_DIR / "raw"
 
 # Ensure directories exist
@@ -40,10 +48,17 @@ PORT = int(os.getenv("PORT", "8000"))
 DEBUG = os.getenv("ENVIRONMENT", "development") == "development"
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 
+# ── Neo4j Graph Database ─────────────────────────────────────────────────────
+NEO4J_URI = os.getenv("NEO4J_URI", "bolt://localhost:7687")
+NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
+NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "mediqr_pass_2026")
+
 # ── Gemini API ───────────────────────────────────────────────────────────────
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
-
+# ── Sarvam AI ───────────────────────────────────────────────────────────────
+SARVAM_API_KEY = os.getenv("SARVAM_API_KEY", "")
+SARVAM_ENDPOINT = os.getenv("SARVAM_ENDPOINT", "https://api.sarvam.ai/v1")
 # ── MLflow ───────────────────────────────────────────────────────────────────
 MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", f"file:///{MLRUNS_DIR}")
 MLFLOW_EXPERIMENT_NAME = os.getenv("MLFLOW_EXPERIMENT_NAME", "mediqr-models")
