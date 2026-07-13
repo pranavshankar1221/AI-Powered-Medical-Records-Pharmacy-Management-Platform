@@ -1,4 +1,4 @@
-##MedFlow AI
+#MedFlow AI
 ### AI-Powered Medical Records & Pharmacy Management Platform
 
 > **MedFlow AI** is a modern healthcare management platform that combines secure medical record management, pharmacy operations, graph-based relationship analytics, and AI-powered clinical assistance into a single application.
