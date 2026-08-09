@@ -10,6 +10,11 @@ BASE_DIR = Path(__file__).resolve().parent
 
 AI_MODULE_DIR = BASE_DIR / "ai_module"
 BACKEND_DIR = BASE_DIR / "backend"
+FLASK_STATIC_DIR = BASE_DIR / "static"
+FRONTEND_DIST = BASE_DIR / "frontend" / "dist"
+
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
 
 if str(AI_MODULE_DIR) not in sys.path:
     sys.path.insert(0, str(AI_MODULE_DIR))
