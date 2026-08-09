@@ -6,41 +6,13 @@ from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
 
 
-# ============================================================================
+# ============================================================
 # PROJECT ROOT
-# ============================================================================
+# ============================================================
 
 BASE_DIR = Path(__file__).resolve().parent
 
-print("=" * 70)
-print("MEDTRACK STARTUP")
-print("=" * 70)
-print(f"BASE_DIR: {BASE_DIR}")
-print(f"BASE_DIR EXISTS: {BASE_DIR.exists()}")
-
-
-# ============================================================================
-# VERIFY PROJECT STRUCTURE
-# ============================================================================
-
-DATABASE_DIR = BASE_DIR / "database"
-DATABASE_DB_FILE = DATABASE_DIR / "db.py"
-
-print(f"DATABASE_DIR: {DATABASE_DIR}")
-print(f"DATABASE_DIR EXISTS: {DATABASE_DIR.exists()}")
-print(f"DATABASE DB.PY EXISTS: {DATABASE_DB_FILE.exists()}")
-
-
-# ============================================================================
-# PYTHON PATH
-# ============================================================================
-
 sys.path.insert(0, str(BASE_DIR))
-
-
-# ============================================================================
-# AI MODULE
-# ============================================================================
 
 AI_MODULE_DIR = BASE_DIR / "ai_module"
 
@@ -48,56 +20,42 @@ if AI_MODULE_DIR.exists():
     sys.path.insert(0, str(AI_MODULE_DIR))
 
 
-# ============================================================================
-# FRONTEND / STATIC
-# ============================================================================
+# ============================================================
+# CONFIG
+# ============================================================
+
+import config
+
+
+# ============================================================
+# DIRECTORIES
+# ============================================================
 
 FRONTEND_DIST = BASE_DIR / "frontend" / "dist"
 FLASK_STATIC_DIR = BASE_DIR / "static"
 
 
-# ============================================================================
-# IMPORT CONFIG
-# ============================================================================
-
-import config
-
-
-# ============================================================================
+# ============================================================
 # DATABASE
-# ============================================================================
+# ============================================================
 
-try:
-
-    from database.db import init_db
-
-    print("[OK] database.db imported successfully.")
-
-except Exception as exc:
-
-    print("=" * 70)
-    print("[ERROR] Could not import database.db")
-    print(f"Error: {exc}")
-    print("=" * 70)
-
-    raise
+from database.db import init_db
 
 
-# ============================================================================
+# ============================================================
 # ROUTES
-# ============================================================================
+# ============================================================
 
 from routes.inventory import inventory_bp
 from routes.billing import billing_bp
 from routes.patient import patient_bp
 
 
-# ============================================================================
+# ============================================================
 # MLOPS
-# ============================================================================
+# ============================================================
 
 try:
-
     from mlops.monitor import (
         get_drift_metrics,
         get_inference_logs,
@@ -115,22 +73,18 @@ except Exception as exc:
     MLOPS_AVAILABLE = False
 
 
-# ============================================================================
-# FLASK APP
-# ============================================================================
+# ============================================================
+# FLASK APPLICATION
+# ============================================================
 
-app = Flask(
-    __name__,
-    static_folder=str(FLASK_STATIC_DIR),
-    static_url_path="/static",
-)
+app = Flask(__name__)
 
 app.secret_key = config.SECRET_KEY
 
 
-# ============================================================================
+# ============================================================
 # CORS
-# ============================================================================
+# ============================================================
 
 CORS(
     app,
@@ -138,50 +92,51 @@ CORS(
         r"/api/*": {
             "origins": "*"
         }
-    },
+    }
 )
 
 
-# ============================================================================
+# ============================================================
 # DATABASE INITIALIZATION
-# ============================================================================
+# ============================================================
 
 try:
 
     init_db()
 
-    print("[OK] Database initialized successfully.")
+    print("[OK] PostgreSQL database initialized.")
 
 except Exception as exc:
 
-    print(f"[WARNING] Database initialization failed: {exc}")
+    print("[WARNING] Database initialization failed:")
+    print(exc)
 
 
-# ============================================================================
+# ============================================================
 # BLUEPRINTS
-# ============================================================================
+# ============================================================
 
 app.register_blueprint(inventory_bp)
 app.register_blueprint(billing_bp)
 app.register_blueprint(patient_bp)
 
 
-# ============================================================================
-# HEALTH
-# ============================================================================
+# ============================================================
+# HEALTH CHECK
+# ============================================================
 
 @app.route("/health", methods=["GET"])
 def health_check():
 
     return jsonify({
         "status": "healthy",
-        "application": "MedTrack",
+        "application": "MedTrack"
     })
 
 
-# ============================================================================
+# ============================================================
 # MLOPS
-# ============================================================================
+# ============================================================
 
 @app.route("/api/mlops/metrics", methods=["GET"])
 def get_monitoring_metrics():
@@ -193,7 +148,7 @@ def get_monitoring_metrics():
             return jsonify({
                 "metrics": {},
                 "logs": [],
-                "warning": "MLOps unavailable",
+                "warning": "MLOps unavailable"
             })
 
         metrics = get_drift_metrics()
@@ -201,20 +156,20 @@ def get_monitoring_metrics():
 
         return jsonify({
             "metrics": metrics,
-            "logs": logs,
+            "logs": logs
         })
 
     except Exception as exc:
 
         return jsonify({
             "error": "Unable to retrieve monitoring metrics",
-            "details": str(exc),
+            "details": str(exc)
         }), 500
 
 
-# ============================================================================
+# ============================================================
 # REACT FRONTEND
-# ============================================================================
+# ============================================================
 
 def serve_react_app():
 
@@ -224,43 +179,47 @@ def serve_react_app():
 
         return jsonify({
             "error": "React frontend build not found",
-            "expected": str(index_file),
+            "expected": str(index_file)
         }), 500
 
     return send_from_directory(
         str(FRONTEND_DIST),
-        "index.html",
+        "index.html"
     )
 
 
-# ============================================================================
+# ============================================================
 # HOME
-# ============================================================================
+# ============================================================
 
-@app.route("/")
+@app.route("/", methods=["GET"])
 def home():
 
     return serve_react_app()
 
 
-# ============================================================================
-# REACT ROUTER
-# ============================================================================
+# ============================================================
+# REACT ROUTER FALLBACK
+# ============================================================
 
-@app.route("/<path:path>")
+@app.route("/<path:path>", methods=["GET"])
 def react_routes(path):
 
-    # Never intercept API requests
+    # --------------------------------------------------------
+    # API routes
+    # --------------------------------------------------------
 
     if path.startswith("api/"):
 
         return jsonify({
             "error": "API endpoint not found",
-            "path": f"/{path}",
+            "path": f"/{path}"
         }), 404
 
 
-    # Static files
+    # --------------------------------------------------------
+    # Flask static files
+    # --------------------------------------------------------
 
     if path.startswith("static/"):
 
@@ -272,16 +231,18 @@ def react_routes(path):
 
             return send_from_directory(
                 str(FLASK_STATIC_DIR),
-                static_path,
+                static_path
             )
 
         return jsonify({
             "error": "Static file not found",
-            "path": f"/{path}",
+            "path": f"/{path}"
         }), 404
 
 
-    # React files
+    # --------------------------------------------------------
+    # React/Vite static files
+    # --------------------------------------------------------
 
     requested_file = FRONTEND_DIST / path
 
@@ -289,53 +250,52 @@ def react_routes(path):
 
         return send_from_directory(
             str(FRONTEND_DIST),
-            path,
+            path
         )
 
 
+    # --------------------------------------------------------
     # React Router fallback
+    # --------------------------------------------------------
 
     return serve_react_app()
 
 
-# ============================================================================
-# LOCAL SERVER
-# ============================================================================
+# ============================================================
+# LOCAL DEVELOPMENT
+# ============================================================
 
 def start_local_server():
 
     host = os.getenv(
         "HOST",
-        getattr(config, "HOST", "0.0.0.0"),
+        config.HOST
     )
 
     port = int(
         os.getenv(
             "PORT",
-            getattr(config, "PORT", 5000),
+            config.PORT
         )
     )
 
-    debug = getattr(
-        config,
-        "DEBUG",
-        False,
-    )
-
-    print(
-        f"Starting MedTrack on {host}:{port}"
-    )
+    print("=" * 70)
+    print("MEDTRACK APPLICATION")
+    print("=" * 70)
+    print(f"Host: {host}")
+    print(f"Port: {port}")
+    print("=" * 70)
 
     app.run(
         host=host,
         port=port,
-        debug=debug,
+        debug=False
     )
 
 
-# ============================================================================
+# ============================================================
 # ENTRY POINT
-# ============================================================================
+# ============================================================
 
 if __name__ == "__main__":
 
