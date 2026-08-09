@@ -1,27 +1,5 @@
-"""
-MedTrack - Main Flask Application
 
-Project structure:
 
-PROJECT/
-├── app.py
-├── config.py
-├── requirements.txt
-├── Dockerfile
-├── frontend/
-│   └── dist/
-├── backend/
-│   ├── database/
-│   ├── routes/
-│   ├── services/
-│   ├── schemas/
-│   ├── middleware/
-│   └── utils/
-├── ai_module/
-├── mlops/
-├── data/
-└── knowledge_base/
-"""
 
 import os
 import sys
@@ -37,29 +15,23 @@ from flask_cors import CORS
 
 BASE_DIR = Path(__file__).resolve().parent
 
-BACKEND_DIR = BASE_DIR / "backend"
 AI_MODULE_DIR = BASE_DIR / "ai_module"
 FRONTEND_DIST = BASE_DIR / "frontend" / "dist"
 FLASK_STATIC_DIR = BASE_DIR / "static"
 
 
 # ============================================================================
-# PYTHON IMPORT PATHS
+# PYTHON IMPORT PATH
 # ============================================================================
 
-# Root project directory
+# Your database/, routes/, services/, mlops/ folders are
+# located directly in the project root.
+
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-# Backend directory
-# This allows:
-# from database.db import ...
-# from routes.inventory import ...
-# etc.
-if BACKEND_DIR.exists() and str(BACKEND_DIR) not in sys.path:
-    sys.path.insert(0, str(BACKEND_DIR))
+# Add AI module if it exists.
 
-# AI module
 if AI_MODULE_DIR.exists() and str(AI_MODULE_DIR) not in sys.path:
     sys.path.insert(0, str(AI_MODULE_DIR))
 
@@ -77,15 +49,23 @@ from routes.billing import billing_bp
 from routes.patient import patient_bp
 
 
-# MLOps is in the project root in your repository
+# MLOps monitoring
+
 try:
     from mlops.monitor import (
         get_drift_metrics,
         get_inference_logs,
     )
-except ImportError:
+
+    MLOPS_AVAILABLE = True
+
+except ImportError as exc:
+    print(f"[WARNING] MLOps module unavailable: {exc}")
+
     get_drift_metrics = None
     get_inference_logs = None
+
+    MLOPS_AVAILABLE = False
 
 
 # ============================================================================
@@ -120,11 +100,16 @@ CORS(
 # ============================================================================
 
 try:
+
     init_db()
+
     print("[OK] Database initialized successfully.")
 
 except Exception as exc:
-    print(f"[WARNING] Database initialization failed: {exc}")
+
+    print(
+        f"[WARNING] Database initialization failed: {exc}"
+    )
 
 
 # ============================================================================
@@ -155,19 +140,21 @@ def health_check():
 
 
 # ============================================================================
-# MLOPS MONITORING
+# MLOPS MONITORING PAGE
 # ============================================================================
 
 @app.route("/monitoring", methods=["GET"])
 def monitoring_page():
     """
-    Monitoring page.
-
-    React Router can handle the frontend route.
+    Serve the React application for the monitoring route.
     """
 
     return serve_react_app()
 
+
+# ============================================================================
+# MLOPS API
+# ============================================================================
 
 @app.route("/api/mlops/metrics", methods=["GET"])
 def get_monitoring_metrics():
@@ -177,12 +164,13 @@ def get_monitoring_metrics():
 
     try:
 
-        if get_drift_metrics is None or get_inference_logs is None:
+        if not MLOPS_AVAILABLE:
+
             return jsonify(
                 {
                     "metrics": {},
                     "logs": [],
-                    "warning": "MLOps monitoring module is unavailable.",
+                    "warning": "MLOps monitoring module unavailable.",
                 }
             )
 
@@ -197,6 +185,10 @@ def get_monitoring_metrics():
         )
 
     except Exception as exc:
+
+        print(
+            f"[ERROR] MLOps metrics failed: {exc}"
+        )
 
         return jsonify(
             {
@@ -214,7 +206,7 @@ def serve_react_app():
     """
     Serve the production React/Vite application.
 
-    Docker builds the frontend using:
+    The Dockerfile builds the React application using:
 
         npm run build
 
@@ -226,6 +218,10 @@ def serve_react_app():
     index_file = FRONTEND_DIST / "index.html"
 
     if not index_file.exists():
+
+        print(
+            f"[ERROR] React build not found: {index_file}"
+        )
 
         return jsonify(
             {
@@ -241,7 +237,7 @@ def serve_react_app():
 
 
 # ============================================================================
-# HOME
+# HOME PAGE
 # ============================================================================
 
 @app.route("/", methods=["GET"])
@@ -262,15 +258,15 @@ def react_routes(path):
     """
     Serve React/Vite static files.
 
-    If a requested file exists in frontend/dist,
-    serve it.
+    If the requested file exists inside frontend/dist,
+    serve it directly.
 
-    Otherwise return index.html so React Router
-    can handle the client-side route.
+    Otherwise return index.html so React Router can
+    handle the client-side route.
     """
 
     # ------------------------------------------------------------------------
-    # Never intercept API routes
+    # API routes must never be intercepted by React
     # ------------------------------------------------------------------------
 
     if path.startswith("api/"):
@@ -283,7 +279,7 @@ def react_routes(path):
         ), 404
 
     # ------------------------------------------------------------------------
-    # Static files
+    # Flask static files
     # ------------------------------------------------------------------------
 
     if path.startswith("static/"):
@@ -307,7 +303,7 @@ def react_routes(path):
         ), 404
 
     # ------------------------------------------------------------------------
-    # React/Vite static file
+    # React/Vite static files
     # ------------------------------------------------------------------------
 
     requested_file = FRONTEND_DIST / path
@@ -333,15 +329,18 @@ def react_routes(path):
 def start_local_server():
     """
     Start Flask development server locally.
+
+    Render does not use this function when Gunicorn is used.
     """
 
-    host = getattr(
-        config,
+    host = os.getenv(
         "HOST",
-        os.getenv("HOST", "0.0.0.0"),
+        getattr(config, "HOST", "0.0.0.0"),
     )
 
-    # Render provides PORT through environment variables.
+    # Render provides PORT automatically.
+    # Locally defaults to config.PORT / 5000.
+
     port = int(
         os.getenv(
             "PORT",
@@ -356,7 +355,7 @@ def start_local_server():
     )
 
     # ------------------------------------------------------------------------
-    # Try loading FAISS / RAG index
+    # Load FAISS / RAG index
     # ------------------------------------------------------------------------
 
     try:
@@ -400,8 +399,9 @@ def start_local_server():
 
 
 # ============================================================================
-# ENTRY POINT
+# APPLICATION ENTRY POINT
 # ============================================================================
 
 if __name__ == "__main__":
+
     start_local_server()

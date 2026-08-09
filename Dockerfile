@@ -23,6 +23,9 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# Ensure repository root is on Python path so top-level packages import reliably
+ENV PYTHONPATH=/app:$PYTHONPATH
+
 # System packages required by FAISS / NumPy / ML libraries
 RUN apt-get update && apt-get install -y \
     build-essential \
