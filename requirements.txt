@@ -5,3 +5,4 @@ qrcode[pil]
 faiss-cpu
 google-generativeai
 python-dotenv
+gunicorn
