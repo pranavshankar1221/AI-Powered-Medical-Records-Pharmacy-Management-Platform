@@ -1,7 +1,7 @@
 # Git
-.git
+.git/
 .gitignore
-.github
+.github/
 
 # Environment / secrets
 .env
@@ -9,22 +9,22 @@
 !.env.example
 
 # Python
-__pycache__
+__pycache__/
 *.pyc
 *.pyo
 *.pyd
 .Python
 
 # Virtual environments
-.venv
-venv
-env
-backend/.venv_old
+.venv/
+venv/
+env/
+backend/.venv_old/
 
 # Node
-node_modules
-frontend/node_modules
-frontend/dist
+node_modules/
+frontend/node_modules/
+frontend/dist/
 
 # Logs
 *.log
@@ -33,22 +33,22 @@ yarn-debug.log*
 pnpm-debug.log*
 
 # IDE / editor
-.vscode
-.idea
+.vscode/
+.idea/
 
 # OS files
 .DS_Store
 Thumbs.db
 
 # Testing / coverage
-.pytest_cache
+.pytest_cache/
 .coverage
-htmlcov
+htmlcov/
 
 # Build/cache
-*.egg-info
-dist
-build
+*.egg-info/
+dist/
+build/
 
 # Temporary files
 *.tmp
