@@ -12,12 +12,9 @@ from flask_cors import CORS
 
 BASE_DIR = Path(__file__).resolve().parent
 
-sys.path.insert(0, str(BASE_DIR))
-
-AI_MODULE_DIR = BASE_DIR / "ai_module"
-
-if AI_MODULE_DIR.exists():
-    sys.path.insert(0, str(AI_MODULE_DIR))
+# Make project root importable
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
 
 
 # ============================================================
@@ -36,10 +33,33 @@ FLASK_STATIC_DIR = BASE_DIR / "static"
 
 
 # ============================================================
+# STARTUP INFORMATION
+# ============================================================
+
+print("=" * 70)
+print("MEDTRACK STARTUP")
+print("=" * 70)
+print(f"BASE_DIR: {BASE_DIR}")
+print(f"FRONTEND_DIST: {FRONTEND_DIST}")
+print(f"FRONTEND EXISTS: {FRONTEND_DIST.exists()}")
+print("=" * 70)
+
+
+# ============================================================
 # DATABASE
 # ============================================================
 
-from database.db import init_db
+try:
+    from database.db import init_db
+
+    print("[OK] database.db imported successfully.")
+
+except Exception as exc:
+    print("=" * 70)
+    print("[ERROR] Could not import database.db")
+    print(f"Error: {exc}")
+    print("=" * 70)
+    raise
 
 
 # ============================================================
@@ -62,6 +82,8 @@ try:
     )
 
     MLOPS_AVAILABLE = True
+
+    print("[OK] MLOps module loaded.")
 
 except Exception as exc:
 
@@ -104,21 +126,25 @@ try:
 
     init_db()
 
-    print("[OK] PostgreSQL database initialized.")
+    print("[OK] Database initialized successfully.")
 
 except Exception as exc:
 
-    print("[WARNING] Database initialization failed:")
-    print(exc)
+    print("=" * 70)
+    print("[WARNING] Database initialization failed")
+    print(f"Error: {exc}")
+    print("=" * 70)
 
 
 # ============================================================
-# BLUEPRINTS
+# REGISTER BLUEPRINTS
 # ============================================================
 
 app.register_blueprint(inventory_bp)
 app.register_blueprint(billing_bp)
 app.register_blueprint(patient_bp)
+
+print("[OK] Flask blueprints registered.")
 
 
 # ============================================================
@@ -135,7 +161,7 @@ def health_check():
 
 
 # ============================================================
-# MLOPS
+# MLOPS MONITORING
 # ============================================================
 
 @app.route("/api/mlops/metrics", methods=["GET"])
@@ -206,7 +232,7 @@ def home():
 def react_routes(path):
 
     # --------------------------------------------------------
-    # API routes
+    # Do not intercept API routes
     # --------------------------------------------------------
 
     if path.startswith("api/"):
@@ -269,13 +295,13 @@ def start_local_server():
 
     host = os.getenv(
         "HOST",
-        config.HOST
+        getattr(config, "HOST", "0.0.0.0")
     )
 
     port = int(
         os.getenv(
             "PORT",
-            config.PORT
+            getattr(config, "PORT", 5000)
         )
     )
 

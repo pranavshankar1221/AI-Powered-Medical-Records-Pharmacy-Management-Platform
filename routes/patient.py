@@ -6,7 +6,7 @@ and guardrailed RAG chatbot queries.
 
 from flask import Blueprint, request, jsonify
 import json
-from services.rag_engine import generate_response
+from ai_module.services.rag_engine import generate_response
 from services.qr_service import decode_qr_payload
 from database.db import get_session
 from database.models import InventoryBatch, Medicine
