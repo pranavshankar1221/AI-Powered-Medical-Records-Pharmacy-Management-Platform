@@ -1,10 +1,3 @@
-"""
-app.py
-Main entry point for MedTrack.
-
-Flask backend + React/Vite frontend served from a single application.
-"""
-
 import os
 import sys
 from pathlib import Path
@@ -12,23 +5,17 @@ from pathlib import Path
 from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
 
-# ---------------------------------------------------------------------------
-# Paths
-# ---------------------------------------------------------------------------
 
 BASE_DIR = Path(__file__).resolve().parent
-AI_MODULE_DIR = BASE_DIR / "ai_module"
-FRONTEND_DIST = BASE_DIR / "frontend" / "dist"
-FLASK_STATIC_DIR = BASE_DIR / "static"
 
-# Add ai_module to Python path
+AI_MODULE_DIR = BASE_DIR / "ai_module"
+BACKEND_DIR = BASE_DIR / "backend"
+
 if str(AI_MODULE_DIR) not in sys.path:
     sys.path.insert(0, str(AI_MODULE_DIR))
 
-
-# ---------------------------------------------------------------------------
-# Application imports
-# ---------------------------------------------------------------------------
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
 
 import config
 
