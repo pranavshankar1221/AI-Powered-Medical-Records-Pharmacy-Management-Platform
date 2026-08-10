@@ -1,7 +1,12 @@
-// API Configuration for MEDIQR Mobile App
+// API Configuration for MEDIQR
+// Frontend and Flask backend are deployed on the same Render service.
+
 const API_CONFIG = {
-  // Update this to your backend URL
-  BASE_URL: 'http://localhost:8000',
+  // Empty string means use the same domain as the frontend.
+  // Example:
+  // https://your-app.onrender.com/api/auth/register
+  BASE_URL: "",
+  
   TIMEOUT: 10000,
 };
 
